@@ -19,16 +19,12 @@ type Document struct {
 
 // Reads the variable structure into the JSON-Schema Document
 func (d *Document) Read(variable interface{}) {
-	d.setDefaultSchema()
-
-	value := reflect.ValueOf(variable)
-	d.read(value.Type(), tagOptions(""))
-}
-
-func (d *Document) setDefaultSchema() {
 	if d.Schema == "" {
 		d.Schema = DEFAULT_SCHEMA
 	}
+
+	value := reflect.ValueOf(variable)
+	d.read(value.Type(), "")
 }
 
 // Marshal returns the JSON encoding of the Document
@@ -43,7 +39,8 @@ func (d *Document) String() string {
 }
 
 type property struct {
-	Type                 string               `json:"type,omitempty"`
+	typee                string
+	Type                 []string             `json:"type,omitempty"`
 	Format               string               `json:"format,omitempty"`
 	Items                *property            `json:"items,omitempty"`
 	Properties           map[string]*property `json:"properties,omitempty"`
@@ -54,7 +51,7 @@ type property struct {
 func (p *property) read(t reflect.Type, opts tagOptions) {
 	jsType, format, kind := getTypeFromMapping(t)
 	if jsType != "" {
-		p.Type = jsType
+		p.typee = jsType
 	}
 	if format != "" {
 		p.Format = format
@@ -69,13 +66,23 @@ func (p *property) read(t reflect.Type, opts tagOptions) {
 		p.readFromStruct(t)
 	case reflect.Ptr:
 		p.read(t.Elem(), opts)
+		if len(p.Type) > 0 {
+			p.Type = append(p.Type, "null")
+		}
+		return
 	}
+
+	if len(p.typee) == 0 {
+		return
+	}
+	p.Type = append(p.Type[:0], p.typee)
+	p.typee = ""
 }
 
 func (p *property) readFromSlice(t reflect.Type) {
 	jsType, _, kind := getTypeFromMapping(t.Elem())
 	if kind == reflect.Uint8 {
-		p.Type = "string"
+		p.typee = "string"
 	} else if jsType != "" {
 		p.Items = &property{}
 		p.Items.read(t.Elem(), tagOptions(""))
@@ -83,18 +90,20 @@ func (p *property) readFromSlice(t reflect.Type) {
 }
 
 func (p *property) readFromMap(t reflect.Type) {
-	jsType, format, _ := getTypeFromMapping(t.Elem())
+	jsType, _, _ := getTypeFromMapping(t.Elem())
 
 	if jsType != "" {
 		p.Properties = make(map[string]*property, 0)
-		p.Properties[".*"] = &property{Type: jsType, Format: format}
+		var newProp property
+		newProp.read(t.Elem(), "")
+		p.Properties[".*"] = &newProp
 	} else {
 		p.AdditionalProperties = true
 	}
 }
 
 func (p *property) readFromStruct(t reflect.Type) {
-	p.Type = "object"
+	p.typee = "object"
 	p.Properties = make(map[string]*property, 0)
 	p.AdditionalProperties = false
 
@@ -132,40 +141,48 @@ func (p *property) readFromStruct(t reflect.Type) {
 	}
 }
 
-var formatMapping = map[string][]string{
-	"time.Time": []string{"string", "date-time"},
-}
-
-var kindMapping = map[reflect.Kind]string{
-	reflect.Bool:    "boolean",
-	reflect.Int:     "integer",
-	reflect.Int8:    "integer",
-	reflect.Int16:   "integer",
-	reflect.Int32:   "integer",
-	reflect.Int64:   "integer",
-	reflect.Uint:    "integer",
-	reflect.Uint8:   "integer",
-	reflect.Uint16:  "integer",
-	reflect.Uint32:  "integer",
-	reflect.Uint64:  "integer",
-	reflect.Float32: "number",
-	reflect.Float64: "number",
-	reflect.String:  "string",
-	reflect.Slice:   "array",
-	reflect.Struct:  "object",
-	reflect.Map:     "object",
-}
-
 func getTypeFromMapping(t reflect.Type) (string, string, reflect.Kind) {
-	if v, ok := formatMapping[t.String()]; ok {
-		return v[0], v[1], reflect.String
-	}
 
-	if v, ok := kindMapping[t.Kind()]; ok {
-		return v, "", t.Kind()
+	switch v := t.Kind(); v {
+	case reflect.Ptr:
+		return "", "", v
+	case reflect.Slice:
+		return "array", "", v
+	case reflect.Map, reflect.Struct:
+		switch t.String() {
+		case "time.Time":
+			return "string", "date-time", reflect.String
+		}
+		return "object", "", v
+	case reflect.String:
+		return "string", "", v
+	case reflect.Int8:
+		return "integer", "i8", v
+	case reflect.Int16:
+		return "integer", "i16", v
+	case reflect.Int32:
+		return "integer", "i32", v
+	case reflect.Int64, reflect.Int:
+		return "integer", "i64", v
+	case reflect.Uint8:
+		return "integer", "u8", v
+	case reflect.Uint16:
+		return "integer", "u16", v
+	case reflect.Uint32:
+		return "integer", "u32", v
+	case reflect.Uint64, reflect.Uint:
+		return "integer", "u64", v
+	case reflect.Float32:
+		return "number", "f32", v
+	case reflect.Float64:
+		return "number", "f64", v
+	case reflect.Bool:
+		return "boolean", "", v
+	case reflect.Interface:
+		return "", "", v
+	default:
+		return "", "", v
 	}
-
-	return "", "", t.Kind()
 }
 
 type tagOptions string

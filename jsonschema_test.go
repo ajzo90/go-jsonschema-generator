@@ -7,6 +7,8 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+const schemaURL = "http://json-schema.org/schema#"
+
 func Test(t *testing.T) { TestingT(t) }
 
 type propertySuite struct{}
@@ -16,6 +18,7 @@ var _ = Suite(&propertySuite{})
 type ExampleJSONBasic struct {
 	Omitted    string  `json:"-,omitempty"`
 	Bool       bool    `json:",omitempty"`
+	BoolP      *bool   `json:",omitempty"`
 	Integer    int     `json:",omitempty"`
 	Integer8   int8    `json:",omitempty"`
 	Integer16  int16   `json:",omitempty"`
@@ -31,36 +34,39 @@ type ExampleJSONBasic struct {
 	Float32    float32 `json:",omitempty"`
 	Float64    float64
 	Interface  interface{}
+	InterfaceP *interface{}
 	Timestamp  time.Time `json:",omitempty"`
 }
 
-func (self *propertySuite) TestLoad(c *C) {
-	j := &Document{}
-	j.Read(&ExampleJSONBasic{})
+func (suit *propertySuite) TestLoad(c *C) {
+	j := Document{}
+	j.Read(ExampleJSONBasic{})
 
-	c.Assert(*j, DeepEquals, Document{
-		Schema: "http://json-schema.org/schema#",
+	c.Assert(j, DeepEquals, Document{
+		Schema: schemaURL,
 		property: property{
-			Type:     "object",
-			Required: []string{"Float64", "Interface"},
+			Type:     []string{"object"},
+			Required: []string{"Float64", "Interface", "InterfaceP"},
 			Properties: map[string]*property{
-				"Bool":       &property{Type: "boolean"},
-				"Integer":    &property{Type: "integer"},
-				"Integer8":   &property{Type: "integer"},
-				"Integer16":  &property{Type: "integer"},
-				"Integer32":  &property{Type: "integer"},
-				"Integer64":  &property{Type: "integer"},
-				"UInteger":   &property{Type: "integer"},
-				"UInteger8":  &property{Type: "integer"},
-				"UInteger16": &property{Type: "integer"},
-				"UInteger32": &property{Type: "integer"},
-				"UInteger64": &property{Type: "integer"},
-				"String":     &property{Type: "string"},
-				"Bytes":      &property{Type: "string"},
-				"Float32":    &property{Type: "number"},
-				"Float64":    &property{Type: "number"},
-				"Interface":  &property{},
-				"Timestamp":  &property{Type: "string", Format: "date-time"},
+				"Bool":       {Type: []string{"boolean"}},
+				"BoolP":      {Type: []string{"boolean", "null"}},
+				"Integer":    {Type: []string{"integer"}, Format: "i64"},
+				"Integer8":   {Type: []string{"integer"}, Format: "i8"},
+				"Integer16":  {Type: []string{"integer"}, Format: "i16"},
+				"Integer32":  {Type: []string{"integer"}, Format: "i32"},
+				"Integer64":  {Type: []string{"integer"}, Format: "i64"},
+				"UInteger":   {Type: []string{"integer"}, Format: "u64"},
+				"UInteger8":  {Type: []string{"integer"}, Format: "u8"},
+				"UInteger16": {Type: []string{"integer"}, Format: "u16"},
+				"UInteger32": {Type: []string{"integer"}, Format: "u32"},
+				"UInteger64": {Type: []string{"integer"}, Format: "u64"},
+				"String":     {Type: []string{"string"}},
+				"Bytes":      {Type: []string{"string"}},
+				"Float32":    {Type: []string{"number"}, Format: "f32"},
+				"Float64":    {Type: []string{"number"}, Format: "f64"},
+				"Interface":  {},
+				"InterfaceP": {},
+				"Timestamp":  {Type: []string{"string"}, Format: "date-time"},
 			},
 		},
 	})
@@ -70,17 +76,17 @@ type ExampleJSONBasicWithTag struct {
 	Bool bool `json:"test"`
 }
 
-func (self *propertySuite) TestLoadWithTag(c *C) {
-	j := &Document{}
-	j.Read(&ExampleJSONBasicWithTag{})
+func (suit *propertySuite) TestLoadWithTag(c *C) {
+	j := Document{}
+	j.Read(ExampleJSONBasicWithTag{})
 
-	c.Assert(*j, DeepEquals, Document{
-		Schema: "http://json-schema.org/schema#",
+	c.Assert(j, DeepEquals, Document{
+		Schema: schemaURL,
 		property: property{
-			Type:     "object",
+			Type:     []string{"object"},
 			Required: []string{"test"},
 			Properties: map[string]*property{
-				"test": &property{Type: "boolean"},
+				"test": {Type: []string{"boolean"}},
 			},
 		},
 	})
@@ -96,30 +102,30 @@ type ExampleJSONBasicSlices struct {
 	SliceOfStruct    []SliceStruct
 }
 
-func (self *propertySuite) TestLoadSliceAndContains(c *C) {
-	j := &Document{}
-	j.Read(&ExampleJSONBasicSlices{})
+func (suit *propertySuite) TestLoadSliceAndContains(c *C) {
+	j := Document{}
+	j.Read(ExampleJSONBasicSlices{})
 
-	c.Assert(*j, DeepEquals, Document{
-		Schema: "http://json-schema.org/schema#",
+	c.Assert(j, DeepEquals, Document{
+		Schema: schemaURL,
 		property: property{
-			Type: "object",
+			Type: []string{"object"},
 			Properties: map[string]*property{
-				"Slice": &property{
-					Type:  "array",
-					Items: &property{Type: "string"},
+				"Slice": {
+					Type:  []string{"array"},
+					Items: &property{Type: []string{"string"}},
 				},
-				"SliceOfInterface": &property{
-					Type: "array",
+				"SliceOfInterface": {
+					Type: []string{"array"},
 				},
-				"SliceOfStruct": &property{
-					Type: "array",
+				"SliceOfStruct": {
+					Type: []string{"array"},
 					Items: &property{
-						Type:     "object",
+						Type:     []string{"object"},
 						Required: []string{"Value"},
 						Properties: map[string]*property{
-							"Value": &property{
-								Type: "string",
+							"Value": {
+								Type: []string{"string"},
 							},
 						},
 					},
@@ -137,19 +143,19 @@ type ExampleJSONNestedStruct struct {
 	}
 }
 
-func (self *propertySuite) TestLoadNested(c *C) {
-	j := &Document{}
-	j.Read(&ExampleJSONNestedStruct{})
+func (suit *propertySuite) TestLoadNested(c *C) {
+	j := Document{}
+	j.Read(ExampleJSONNestedStruct{})
 
-	c.Assert(*j, DeepEquals, Document{
-		Schema: "http://json-schema.org/schema#",
+	c.Assert(j, DeepEquals, Document{
+		Schema: schemaURL,
 		property: property{
-			Type: "object",
+			Type: []string{"object"},
 			Properties: map[string]*property{
-				"Struct": &property{
-					Type: "object",
+				"Struct": {
+					Type: []string{"object"},
 					Properties: map[string]*property{
-						"Foo": &property{Type: "string"},
+						"Foo": {Type: []string{"string"}},
 					},
 					Required: []string{"Foo"},
 				},
@@ -167,16 +173,16 @@ type ExampleJSONEmbeddedStruct struct {
 	EmbeddedStruct
 }
 
-func (self *propertySuite) TestLoadEmbedded(c *C) {
-	j := &Document{}
-	j.Read(&ExampleJSONEmbeddedStruct{})
+func (suit *propertySuite) TestLoadEmbedded(c *C) {
+	j := Document{}
+	j.Read(ExampleJSONEmbeddedStruct{})
 
-	c.Assert(*j, DeepEquals, Document{
-		Schema: "http://json-schema.org/schema#",
+	c.Assert(j, DeepEquals, Document{
+		Schema: schemaURL,
 		property: property{
-			Type: "object",
+			Type: []string{"object"},
 			Properties: map[string]*property{
-				"Foo": &property{Type: "string"},
+				"Foo": {Type: []string{"string"}},
 			},
 			Required: []string{"Foo"},
 		},
@@ -188,24 +194,24 @@ type ExampleJSONBasicMaps struct {
 	MapOfInterface map[string]interface{}
 }
 
-func (self *propertySuite) TestLoadMap(c *C) {
-	j := &Document{}
-	j.Read(&ExampleJSONBasicMaps{})
+func (suit *propertySuite) TestLoadMap(c *C) {
+	j := Document{}
+	j.Read(ExampleJSONBasicMaps{})
 
-	c.Assert(*j, DeepEquals, Document{
-		Schema: "http://json-schema.org/schema#",
+	c.Assert(j, DeepEquals, Document{
+		Schema: schemaURL,
 		property: property{
-			Type: "object",
+			Type: []string{"object"},
 			Properties: map[string]*property{
-				"Maps": &property{
-					Type: "object",
+				"Maps": {
+					Type: []string{"object"},
 					Properties: map[string]*property{
-						".*": &property{Type: "string"},
+						".*": {Type: []string{"string"}},
 					},
 					AdditionalProperties: false,
 				},
-				"MapOfInterface": &property{
-					Type:                 "object",
+				"MapOfInterface": {
+					Type:                 []string{"object"},
 					AdditionalProperties: true,
 				},
 			},
@@ -214,41 +220,15 @@ func (self *propertySuite) TestLoadMap(c *C) {
 	})
 }
 
-func (self *propertySuite) TestLoadNonStruct(c *C) {
-	j := &Document{}
+func (suit *propertySuite) TestLoadNonStruct(c *C) {
+	j := Document{}
 	j.Read([]string{})
 
-	c.Assert(*j, DeepEquals, Document{
-		Schema: "http://json-schema.org/schema#",
+	c.Assert(j, DeepEquals, Document{
+		Schema: schemaURL,
 		property: property{
-			Type:  "array",
-			Items: &property{Type: "string"},
+			Type:  []string{"array"},
+			Items: &property{Type: []string{"string"}},
 		},
 	})
-}
-
-func (self *propertySuite) TestString(c *C) {
-	j := &Document{}
-	j.Read(true)
-
-	expected := "{\n" +
-		"    \"$schema\": \"http://json-schema.org/schema#\",\n" +
-		"    \"type\": \"boolean\"\n" +
-		"}"
-
-	c.Assert(j.String(), Equals, expected)
-}
-
-func (self *propertySuite) TestMarshal(c *C) {
-	j := &Document{}
-	j.Read(10)
-
-	expected := "{\n" +
-		"    \"$schema\": \"http://json-schema.org/schema#\",\n" +
-		"    \"type\": \"integer\"\n" +
-		"}"
-
-	json, err := j.Marshal()
-	c.Assert(err, IsNil)
-	c.Assert(string(json), Equals, expected)
 }
