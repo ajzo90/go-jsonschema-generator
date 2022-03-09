@@ -1,4 +1,4 @@
-module github.com/mcuadros/go-jsonschema-generator
+module github.com/ajzo90/go-jsonschema-generator
 
 go 1.14
 
