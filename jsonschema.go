@@ -27,8 +27,13 @@ func New(v interface{}) *Document {
 	return &d
 }
 
-func (d *Document) String() string {
+func (d *Document) Marshal() string {
 	s, _ := json.Marshal(d)
+	return string(s)
+}
+
+func (d *Document) Indented() string {
+	s, _ := json.MarshalIndent(d, "", "  ")
 	return string(s)
 }
 

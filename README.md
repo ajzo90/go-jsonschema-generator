@@ -26,6 +26,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/ajzo90/go-jsonschema-generator"
 )
@@ -44,17 +45,91 @@ type ExampleBasic struct {
 	Qux *int8
 	Baz []string
 	EmbeddedType
-	List []Item
+	List   []Item
+	MyTime time.Time
 }
 
 func main() {
-	fmt.Println(jsonschema.New(ExampleBasic{}))
+	fmt.Println(jsonschema.New(ExampleBasic{}).Indented())
 }
 ```
 
 ```json
-{"$schema":"http://json-schema.org/schema#","type":["object"],"properties":{"Bar":{"type":["string"]},"Baz":{"type":["array"],"items":{"type":["string"]}},"List":{"type":["array"],"items":{"type":["object"],"properties":{"Value":{"type":["string"]}},"required":["Value"]}},"Qux":{"type":["integer","null"],"format":"i8"},"Zoo":{"type":["string","null"]},"foo":{"type":["boolean"]}},"required":["foo","Qux","Baz","Zoo","List"]}
-
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": [
+    "object"
+  ],
+  "properties": {
+    "Bar": {
+      "type": [
+        "string"
+      ]
+    },
+    "Baz": {
+      "type": [
+        "array"
+      ],
+      "items": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "List": {
+      "type": [
+        "array"
+      ],
+      "items": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "Value": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "Value"
+        ]
+      }
+    },
+    "MyTime": {
+      "type": [
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "Qux": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "i8"
+    },
+    "Zoo": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "foo": {
+      "type": [
+        "boolean"
+      ]
+    }
+  },
+  "required": [
+    "foo",
+    "Qux",
+    "Baz",
+    "Zoo",
+    "List",
+    "MyTime"
+  ]
+}
 ```
 
 License

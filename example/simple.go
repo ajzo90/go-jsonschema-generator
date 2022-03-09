@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/ajzo90/go-jsonschema-generator"
 )
@@ -20,9 +21,10 @@ type ExampleBasic struct {
 	Qux *int8
 	Baz []string
 	EmbeddedType
-	List []Item
+	List   []Item
+	MyTime time.Time
 }
 
 func main() {
-	fmt.Println(jsonschema.New(ExampleBasic{}))
+	fmt.Println(jsonschema.New(ExampleBasic{}).Indented())
 }
