@@ -1,7 +1,7 @@
 go-jsonschema-generator [![Build Status](https://img.shields.io/github/workflow/status/ajzo90/go-jsonschema-generator/Test.svg)](https://github.com/ajzo90/go-jsonschema-generator/actions) [![GoDoc](http://godoc.org/github.com/ajzo90/go-jsonschema-generator?status.png)](https://pkg.go.dev/github.com/ajzo90/go-jsonschema-generator)
 ==============================
 
-## Fork of github.com/mcuadros/go-jsonschema-generator
+Fork of github.com/mcuadros/go-jsonschema-generator. Thank you very much. Updated and refactored to handle null from pointer fields. It uses `[]string` instead of `string` for the `type` field, and append "null" in case the field is a pointer.
 
 Basic [json-schema](http://json-schema.org/) generator based on Go types, for easy interchange of Go structures across languages.
 
