@@ -45,8 +45,10 @@ type ExampleBasic struct {
 	Qux *int8
 	Baz []string
 	EmbeddedType
-	List   []Item
-	MyTime time.Time
+	List                    []Item
+	MyTime                  time.Time
+	MapWithUnknownValueType map[string]interface{}
+	MapWithKnownValueType   map[string]uint64
 }
 
 func main() {
@@ -96,6 +98,25 @@ func main() {
         ]
       }
     },
+    "MapWithKnownValueType": {
+      "type": [
+        "object"
+      ],
+      "properties": {
+        ".*": {
+          "type": [
+            "integer"
+          ],
+          "format": "u64"
+        }
+      }
+    },
+    "MapWithUnknownValueType": {
+      "type": [
+        "object"
+      ],
+      "additionalProperties": true
+    },
     "MyTime": {
       "type": [
         "string"
@@ -127,9 +148,12 @@ func main() {
     "Baz",
     "Zoo",
     "List",
-    "MyTime"
+    "MyTime",
+    "MapWithUnknownValueType",
+    "MapWithKnownValueType"
   ]
 }
+
 ```
 
 License

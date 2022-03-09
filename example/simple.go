@@ -21,8 +21,10 @@ type ExampleBasic struct {
 	Qux *int8
 	Baz []string
 	EmbeddedType
-	List   []Item
-	MyTime time.Time
+	List                    []Item
+	MyTime                  time.Time
+	MapWithUnknownValueType map[string]interface{}
+	MapWithKnownValueType   map[string]uint64
 }
 
 func main() {
