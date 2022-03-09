@@ -39,10 +39,9 @@ type ExampleJSONBasic struct {
 }
 
 func (suit *propertySuite) TestLoad(c *C) {
-	j := Document{}
-	j.Read(ExampleJSONBasic{})
+	j := New(ExampleJSONBasic{})
 
-	c.Assert(j, DeepEquals, Document{
+	c.Assert(j, DeepEquals, &Document{
 		Schema: schemaURL,
 		property: property{
 			Type:     []string{"object"},
@@ -77,10 +76,9 @@ type ExampleJSONBasicWithTag struct {
 }
 
 func (suit *propertySuite) TestLoadWithTag(c *C) {
-	j := Document{}
-	j.Read(ExampleJSONBasicWithTag{})
+	j := New(ExampleJSONBasicWithTag{})
 
-	c.Assert(j, DeepEquals, Document{
+	c.Assert(j, DeepEquals, &Document{
 		Schema: schemaURL,
 		property: property{
 			Type:     []string{"object"},
@@ -103,10 +101,9 @@ type ExampleJSONBasicSlices struct {
 }
 
 func (suit *propertySuite) TestLoadSliceAndContains(c *C) {
-	j := Document{}
-	j.Read(ExampleJSONBasicSlices{})
+	j := New(ExampleJSONBasicSlices{})
 
-	c.Assert(j, DeepEquals, Document{
+	c.Assert(j, DeepEquals, &Document{
 		Schema: schemaURL,
 		property: property{
 			Type: []string{"object"},
@@ -144,10 +141,9 @@ type ExampleJSONNestedStruct struct {
 }
 
 func (suit *propertySuite) TestLoadNested(c *C) {
-	j := Document{}
-	j.Read(ExampleJSONNestedStruct{})
+	j := New(ExampleJSONNestedStruct{})
 
-	c.Assert(j, DeepEquals, Document{
+	c.Assert(j, DeepEquals, &Document{
 		Schema: schemaURL,
 		property: property{
 			Type: []string{"object"},
@@ -174,10 +170,9 @@ type ExampleJSONEmbeddedStruct struct {
 }
 
 func (suit *propertySuite) TestLoadEmbedded(c *C) {
-	j := Document{}
-	j.Read(ExampleJSONEmbeddedStruct{})
+	j := New(ExampleJSONEmbeddedStruct{})
 
-	c.Assert(j, DeepEquals, Document{
+	c.Assert(j, DeepEquals, &Document{
 		Schema: schemaURL,
 		property: property{
 			Type: []string{"object"},
@@ -195,10 +190,9 @@ type ExampleJSONBasicMaps struct {
 }
 
 func (suit *propertySuite) TestLoadMap(c *C) {
-	j := Document{}
-	j.Read(ExampleJSONBasicMaps{})
+	j := New(ExampleJSONBasicMaps{})
 
-	c.Assert(j, DeepEquals, Document{
+	c.Assert(j, DeepEquals, &Document{
 		Schema: schemaURL,
 		property: property{
 			Type: []string{"object"},
@@ -221,10 +215,9 @@ func (suit *propertySuite) TestLoadMap(c *C) {
 }
 
 func (suit *propertySuite) TestLoadNonStruct(c *C) {
-	j := Document{}
-	j.Read([]string{})
+	j := New([]string{})
 
-	c.Assert(j, DeepEquals, Document{
+	c.Assert(j, DeepEquals, &Document{
 		Schema: schemaURL,
 		property: property{
 			Type:  []string{"array"},

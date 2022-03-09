@@ -17,29 +17,23 @@ type Document struct {
 	property
 }
 
-// Reads the variable structure into the JSON-Schema Document
-func (d *Document) Read(variable interface{}) {
+func New(v interface{}) *Document {
+	var d Document
 	if d.Schema == "" {
 		d.Schema = DEFAULT_SCHEMA
 	}
-
-	value := reflect.ValueOf(variable)
+	value := reflect.ValueOf(v)
 	d.read(value.Type(), "")
+	return &d
 }
 
-// Marshal returns the JSON encoding of the Document
-func (d *Document) Marshal() ([]byte, error) {
-	return json.MarshalIndent(d, "", "    ")
-}
-
-// String return the JSON encoding of the Document as a string
 func (d *Document) String() string {
-	json, _ := d.Marshal()
-	return string(json)
+	s, _ := json.Marshal(d)
+	return string(s)
 }
 
 type property struct {
-	typee                string
+	typ                  string
 	Type                 []string             `json:"type,omitempty"`
 	Format               string               `json:"format,omitempty"`
 	Items                *property            `json:"items,omitempty"`
@@ -51,7 +45,7 @@ type property struct {
 func (p *property) read(t reflect.Type, opts tagOptions) {
 	jsType, format, kind := getTypeFromMapping(t)
 	if jsType != "" {
-		p.typee = jsType
+		p.typ = jsType
 	}
 	if format != "" {
 		p.Format = format
@@ -72,17 +66,17 @@ func (p *property) read(t reflect.Type, opts tagOptions) {
 		return
 	}
 
-	if len(p.typee) == 0 {
+	if len(p.typ) == 0 {
 		return
 	}
-	p.Type = append(p.Type[:0], p.typee)
-	p.typee = ""
+	p.Type = append(p.Type[:0], p.typ)
+	p.typ = ""
 }
 
 func (p *property) readFromSlice(t reflect.Type) {
 	jsType, _, kind := getTypeFromMapping(t.Elem())
 	if kind == reflect.Uint8 {
-		p.typee = "string"
+		p.typ = "string"
 	} else if jsType != "" {
 		p.Items = &property{}
 		p.Items.read(t.Elem(), tagOptions(""))
@@ -103,7 +97,7 @@ func (p *property) readFromMap(t reflect.Type) {
 }
 
 func (p *property) readFromStruct(t reflect.Type) {
-	p.typee = "object"
+	p.typ = "object"
 	p.Properties = make(map[string]*property, 0)
 	p.AdditionalProperties = false
 
